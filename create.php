@@ -17,10 +17,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Поле Опис є обов'язковим для заповнення!";
     }
 
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+        $fileSize = $_FILES['avatar']['size'];
+        $maxSize = 2 * 1024 * 1024; 
+
+        if ($fileSize > $maxSize) {
+            $errors[] = "Файл завеликий! Максимальний розмір 2 МБ.";
+        }
+
+        $fileExtension = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            $errors[] = "Дозволені лише формати .jpg, .jpeg та .png!";
+        }
+    } else {
+        $errors[] = "Будь ласка, завантажте зображення!";
+    }
+
     if (empty($errors)) {
-        echo "<pre>";
-        var_dump($_POST);
-        echo "</pre>";
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $uploadFile = $uploadDir . basename($_FILES['avatar']['name']);
+        
+        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadFile)) {
+            echo "<pre>";
+            var_dump($_POST);
+            var_dump($_FILES);
+            echo "</pre>";
+        } else {
+            $errors[] = "Помилка при збереженні файлу на сервер!";
+        }
     }
 }
 ?>
@@ -52,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <form action="create.php" method="POST">
+    <form action="create.php" method="POST" enctype="multipart/form-data">
         <label for="title">Назва завдання:</label>
         <input type="text" id="title" name="title" value="<?= $title ?>">
 
@@ -65,6 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="Medium" <?= $priority === 'Medium' ? 'selected' : '' ?>>Medium</option>
             <option value="High" <?= $priority === 'High' ? 'selected' : '' ?>>High</option>
         </select>
+
+        <label for="avatar">Зображення:</label>
+        <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg">
 
         <button type="submit">Зберегти</button>
     </form>
