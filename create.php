@@ -1,19 +1,27 @@
 <?php
 session_start();
+
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'Task.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'TaskRepository.php';
+
 if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
     header('Location: login.php');
     exit;
 }
 
+$repo = new TaskRepository(__DIR__ . '/tasks.json');
+
 $errors = [];
 $title = "";
 $description = "";
 $priority = "Low";
+$deadline = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = htmlspecialchars(trim($_POST['title'] ?? ''));
     $description = htmlspecialchars(trim($_POST['description'] ?? ''));
     $priority = $_POST['priority'] ?? 'Low';
+    $deadline = trim($_POST['deadline'] ?? '') ?: null; 
 
     if (empty($title)) {
         $errors[] = "Поле Назва є обов'язковим для заповнення!";
@@ -37,26 +45,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!in_array($fileExtension, $allowedExtensions)) {
             $errors[] = "Дозволені лише формати .jpg, .jpeg та .png!";
         }
-    } else {
-        $errors[] = "Будь ласка, завантажте зображення!";
     }
 
     if (empty($errors)) {
-        $uploadDir = 'uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+        if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = 'uploads/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadDir . basename($_FILES['avatar']['name']));
         }
 
-        $uploadFile = $uploadDir . basename($_FILES['avatar']['name']);
-        
-        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadFile)) {
-            echo "<pre>";
-            var_dump($_POST);
-            var_dump($_FILES);
-            echo "</pre>";
-        } else {
-            $errors[] = "Помилка при збереженні файлу на сервер!";
-        }
+        $repo->add($title, $deadline);
+
+        header('Location: index.php');
+        exit;
     }
 }
 ?>
@@ -65,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Додати нове завдання</title>
+    <title>Створити завдання</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         form { margin-bottom: 20px; padding: 15px; background: #f3f4f6; border-radius: 5px; width: 350px; }
@@ -101,6 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="Medium" <?= $priority === 'Medium' ? 'selected' : '' ?>>Medium</option>
             <option value="High" <?= $priority === 'High' ? 'selected' : '' ?>>High</option>
         </select>
+
+        <label for="deadline">Дедлайн:</label>
+        <input type="date" id="deadline" name="deadline" value="<?= $deadline ?>">
 
         <label for="avatar">Зображення:</label>
         <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg">

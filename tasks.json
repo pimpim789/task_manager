@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "title": "Виконати завдання",
+        "isCompleted": false,
+        "deadline": "2026-09-28"
+    },
+    {
+        "id": 2,
+        "title": "ВИконати лабораторну 9",
+        "isCompleted": true,
+        "deadline": "2026-10-20"
+    },
+    {
+        "id": 3,
+        "title": "Зробити завдання 5",
+        "isCompleted": false,
+        "deadline": "2026-10-23"
+    }
+]
