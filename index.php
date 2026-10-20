@@ -1,4 +1,6 @@
 <?php
+session_start();
+
   $appName = "Task Manager";
   
   $tasks = [
@@ -50,35 +52,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $appName ?></title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-        .task-done {
-            color: green;
-            text-decoration: line-through;
-        }
-        .task-pending {
-            color: #d97706;
-        }
-        .greeting {
-            color: #4b5563;
-            font-style: italic;
-        }
-        ul {
-            list-style-type: square;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .task-done { color: green; text-decoration: line-through; }
+        .task-pending { color: #d97706; }
+        .greeting { color: #4b5563; font-style: italic; }
+        .auth-block { margin-bottom: 20px; font-weight: bold; }
+        ul { list-style-type: square; }
     </style>
 </head>
 <body>
     <header>
         <h1><?= $appName ?></h1>
+        
+        <div class="auth-block">
+            <?php if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true): ?>
+                Привіт, <?= $_SESSION['user_name'] ?>! [<a href="logout.php">Вийти</a>]
+            <?php else: ?>
+                Ви увійшли як Гість. [<a href="login.php">Увійти</a>]
+            <?php endif; ?>
+        </div>
+
         <p class="greeting"><?= getCurrentGreeting() ?>!</p>
     </header>
 
     <main>
-        <a href="create.php">Додати нове завдання</a>
-        
+        <p><a href="create.php">Додати нове завдання</a></p>
+
         <h2>Список завдань:</h2>
         <ul>
             <?php foreach ($tasks as $task): ?>

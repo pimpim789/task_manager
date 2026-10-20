@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+    header('Location: login.php');
+    exit;
+}
+
 $errors = [];
 $title = "";
 $description = "";
@@ -19,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         $fileSize = $_FILES['avatar']['size'];
-        $maxSize = 2 * 1024 * 1024; 
+        $maxSize = 2 * 1024 * 1024;
 
         if ($fileSize > $maxSize) {
             $errors[] = "Файл завеликий! Максимальний розмір 2 МБ.";
